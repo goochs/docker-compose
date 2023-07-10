@@ -1,0 +1,80 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    env_file: ./traefik_env
+    command:
+      - --api=true
+      - --api.dashboard=true
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.domains[0].main=serek.io
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.serek.io
+      - --entrypoints.websecure.http.tls.certresolver=cloudflare
+
+      - --certificatesresolvers.cloudflare.acme.email=admin@serek.io
+      - --certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.cloudflare.acme.dnschallenge=true
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers[0]=1.1.1.1:53
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers[1]=8.8.8.8:53
+        #- --certificatesresolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - traefik_letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=trashnet
+
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.rule=Host(`traefik.serek.io`)
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.middlewares=auth
+      - traefik.http.middlewares.auth.basicauth.users=seth:$$apr1$$shgblJcz$$q8QO6QnSx0mWFt/aMMuen1
+
+  portainer:
+    image: portainer/portainer-ee:latest
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=trashnet
+        # frontend
+      - traefik.http.routers.portainer_frontend.rule=Host(`portainer.serek.io`)
+      - traefik.http.routers.portainer_frontend.entrypoints=websecure
+      - traefik.http.services.portainer_frontend.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer_frontend.service=portainer_frontend
+        # edge
+      - traefik.http.routers.portainer_edge.rule=Host(`edge.serek.io`)
+      - traefik.http.routers.portainer_edge.entrypoints=websecure
+      - traefik.http.services.portainer_edge.loadbalancer.server.port=8000
+      - traefik.http.routers.portainer_edge.service=portainer_edge
+
+
+volumes:
+  traefik_letsencrypt:
+  portainer_data:
+
+networks:
+  default:
+    external: true
+    name: trashnet 
