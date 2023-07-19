@@ -1,5 +1,5 @@
 variables:
-  $PORTAINER_MEDIA_SERVER_UPDATE: "https://portainer.serek.io/api/stacks/webhooks/c14e1a79-7248-4b02-8caf-a781b58ceeac"
+  PORTAINER_MEDIA_SERVER_UPDATE: "https://portainer.serek.io/api/stacks/webhooks/c14e1a79-7248-4b02-8caf-a781b58ceeac"
 
 Update media server:
   script: curl -X POST $PORTAINER_MEDIA_SERVER_UPDATE
