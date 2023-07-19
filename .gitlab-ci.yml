@@ -4,7 +4,7 @@ variables:
 Update media server:
   script: 
     - apt update
-    - apt install curl
+    - apt install -y curl
     - curl -X POST $PORTAINER_MEDIA_SERVER_UPDATE
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
