@@ -14,11 +14,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - jellyfin_config:/config
       - /mnt/autofs/hoard/media:/hoard/media
-    deploy:
-      resources:
-        reservations:
-          devices:
-            -  capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         -  capabilities: [gpu]
     labels:
       - traefik.enable=true
       - traefik.http.routers.jellyfin.entrypoints=websecure
