@@ -8,3 +8,4 @@ Update media server:
       changes:
         - media_server.yml
       when: always
+    - when: manual
