@@ -1,0 +1,182 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: cr.hotio.dev/hotio/jellyfin:latest
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+      #- NVIDIA_DRIVER_CAPABILITIES=all
+      #- NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - jellyfin_config:/config
+      - /mnt/autofs/hoard/media:/hoard/media
+    #deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        -  capabilities: [gpu]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.entrypoints=websecure
+      - traefik.http.routers.jellyfin.service=jellyfin
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
+      
+  sabnzbd:
+    container_name: sabnzbd
+    image: cr.hotio.dev/hotio/sabnzbd:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - sabnzbd_config:/config
+      - /mnt/autofs/hoard/usenet:/hoard/usenet:rw
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.sabnzbd.entrypoints=websecure
+      - traefik.http.routers.sabnzbd.service=sabnzbd
+      - traefik.http.services.sabnzbd.loadbalancer.server.port=8080
+
+  qflood:
+    container_name: qbittorrent
+    image: cr.hotio.dev/hotio/qbittorrent:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "8118:8118"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+      - VPN_ENABLED=false
+      - VPN_LAN_NETWORK=10.0.0.0/16
+      - VPN_CONF=wg0
+      - VPN_IP_CHECK_DELAY=5
+      - PRIVOXY_ENABLED=false
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - qbittorrent_config:/config
+      - /mnt/autofs/hoard/torrent:/hoard/torrent:rw
+    #cap_add:
+    #  - NET_ADMIN
+    #sysctls:
+    #  - net.ipv4.conf.all.src_valid_mark=1
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.qbittorrent.entrypoints=websecure
+      - traefik.http.routers.qbittorrent.service=qbittorrent
+      - traefik.http.services.qbittorrent.loadbalancer.server.port=8080
+
+  radarr:
+    container_name: radarr
+    image: cr.hotio.dev/hotio/radarr:latest
+    restart: unless-stopped
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - radarr_config:/config
+      - /mnt/autofs/hoard:/hoard
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.radarr.entrypoints=websecure
+      - traefik.http.routers.radarr.service=radarr
+      - traefik.http.services.radarr.loadbalancer.server.port=7878
+
+  sonarr:
+    container_name: sonarr
+    image: cr.hotio.dev/hotio/sonarr:latest
+    restart: unless-stopped
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - sonarr_config:/config
+      - /mnt/autofs/hoard:/hoard
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.sonarr.entrypoints=websecure
+      - traefik.http.routers.sonarr.service=sonarr
+      - traefik.http.services.sonarr.loadbalancer.server.port=8989
+
+
+  prowlarr:
+    container_name: prowlarr
+    image: cr.hotio.dev/hotio/prowlarr:latest
+    restart: unless-stopped
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/New_York
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - prowlarr_config:/config
+      - /mnt/autofs/hoard:/hoard
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prowlarr.entrypoints=websecure
+      - traefik.http.routers.prowlarr.service=prowlarr
+      - traefik.http.services.prowlarr.loadbalancer.server.port=9696
+
+#  doplarr:
+#    container_name: doplarr
+#    image: cr.hotio.dev/hotio/doplarr:latest
+#    restart: always
+#    environment:
+#      - PUID=1000
+#      - PGID=1000
+#      - UMASK=002
+#      - TZ=America/New_York
+#      - DISCORD__TOKEN=TODO
+#      - DISCORD__ROLE_ID=TODO
+#      - DISCORD__MAX_RESULTS=25
+#      - RADARR__URL=http://10.0.5.103:7878 TODO
+#      - RADARR__API=TODO
+#      - RADARR__QUALITY_PROFILE=HD-1080p TODO
+#      - SONARR__URL=http://10.0.5.103:8989 TODO
+#      - SONARR__API=TODO
+#      - SONARR__QUALITY_PROFILE=HD-1080p TODO
+#      - SONARR__LANGUAGE_PROFILE=English
+#      - PARTIAL_SEASONS=true
+#      - LOG_LEVEL=:info
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#      - /docker/appdata/doplarr:/config
+
+volumes:
+  jellyfin_config:
+  sabnzbd_config:
+  qbittorrent_config:
+  radarr_config:
+  sonarr_config:
+  prowlarr_config:
+  
+networks:
+  default:
+    external: true
+    name: ${DOCKER_NET}
