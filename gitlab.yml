@@ -13,6 +13,8 @@ services:
         
         nginx['listen_https'] = false
         nginx['listen_port'] = 80
+
+        gitlab_rails['webhook_timeout'] = 60
         
         gitlab_rails['smtp_enable'] = true
         gitlab_rails['smtp_address'] = "smtp.sendgrid.net"
@@ -56,11 +58,8 @@ services:
     image: gitlab/gitlab-runner:ubuntu
     container_name: gitlab_runner
     restart: always
-    networks:
-      - runner_sandbox
     volumes:
       - gitlab_runner:/etc/gitlab-runner
-      - gitlab_runner_machine_config:/root/.docker/machine
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -72,12 +71,8 @@ volumes:
   gitlab_logs:
   gitlab_data:
   gitlab_runner:
-  gitlab_runner_machine_config:
 
 networks:
-  gitlab_sandbox:
+  default:
     external: true
-    name: gitlab_sandbox
-  runner_sandbox:
-    external: true
-    name: runner_sandbox
+    name: ${DOCKER_NET}

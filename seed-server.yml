@@ -1,0 +1,35 @@
+services:
+  seed_server:
+    image: itzg/minecraft-server
+    container_name: seed_server
+    restart: always
+    tty: true
+    ports:
+      - 25565:25565
+    environment:
+      EULA: "TRUE"
+      VERSION: "1.20.1"
+      TYPE: "FABRIC"
+      WHITELIST: "mangoeseeds,unworldlyalex"
+      OPS: "mangoeseeds,unworldlyalex"
+      ENFORCE_WHITELIST: "TRUE"
+
+      MEMORY: "4G"
+      VIEW_DISTANCE: "20"
+      MODS: |
+        https://mediafilez.forgecdn.net/files/4586/218/worldedit-mod-7.2.15.jar
+        https://github.com/gnembon/fabric-carpet/releases/download/1.4.112/fabric-carpet-1.20-1.4.112+v230608.jar
+    volumes:
+      - seed_server:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - portainer.hidden=true
+      
+volumes:
+  seed_server:
+
+networks:
+  default:
+    external: true
+    name: ${DOCKER_NET}

@@ -1,0 +1,27 @@
+services:
+  virt-manager:
+    image: mber5/virt-manager:latest
+    container_name: virt_manager
+    restart: always
+    privileged: true
+    environment:
+      DARK_MODE: true
+      HOSTS: "['qemu:///system']"
+    volumes:
+      - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
+      - /mnt/virt/images:/mnt/virt/images
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.virt_manager.entrypoints=websecure
+      - traefik.http.routers.virt_manager.service=virt_manager
+      - traefik.http.routers.virt_manager.middlewares=auth
+      - traefik.http.middlewares.auth.basicauth.users=${USER_AUTH}
+      - traefik.http.services.virt_manager.loadbalancer.server.port=80
+
+    devices:
+      - /dev/kvm:/dev/kvm
+
+networks:
+  default:
+    external: true
+    name: ${DOCKER_NET}

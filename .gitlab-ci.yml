@@ -11,3 +11,5 @@ Update media server:
       changes:
         - media_server.yml
       when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
