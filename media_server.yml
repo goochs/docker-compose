@@ -180,7 +180,3 @@ networks:
   default:
     external: true
     name: ${DOCKER_NET}
-
-DOMAIN=serek.io
-DOCKER_NET=trashnet
-USER_AUTH=seth:$$apr1$$shgblJcz$$q8QO6QnSx0mWFt/aMMuen1
